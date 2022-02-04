@@ -24,18 +24,24 @@ if [ $USER != "root" ]; then
     exit 1;
 fi;
 
+if [ ! -d "/opt/drupal" ]; then
+	echo "Making /opt/drupal";
+	mkdir /opt/drupal;
+fi;
+
 # Contains the DB secrets - this should end up being provided by GitHub secrets for privacy and security concerns.
 source db_info.env
 
+cur_dir=$(pwd)
 
 # This installation assumes a basic CentOS/SL7 image and so installs the necessary packages. There is scope to move this setup to Aquilon
 echo "Starting to setup InfraPortal";
 echo "Updating machine and installing git";
 sudo yum update -y && sudo yum install git docker-ce docker-compose -y;
-if [ ! -d "infrastructure-portal" ]; then
-    git clone https://github.com/stfc/infrastructure-portal.git;
+if [ ! -d "../infrastructure-portal" ]; then
+    git clone https://github.com/stfc/infrastructure-portal.git /opt/drupal/infrastructure-portal;
 fi;
-cd infrastructure-portal;
+cd /opt/drupal/infrastructure-portal;
 echo "Switching to branch $infra_branch";
 git checkout $infra_branch;
 
@@ -63,15 +69,14 @@ echo "$db_settings" >> $settings_path;
 
 # The DB dump is moved to a folder that the mysql container will use as part of its startup
 echo "Saving website database dump to /opt/drupal/";
-if [ ! -d "/opt/drupal" ]; then
-	echo "Making /opt/drupal";
-	mkdir /opt/drupal;
-fi;
+
+# Move back to the script folder
+cd $cur_dir
 
 if [ ! -f "/opt/drupal/infraportal.sql" ]; then
     echo "Copying .sql file to /opt/drupal/";
-    if [ -f ../infraportal.sql ]; then
-        cp ../infraportal.sql /opt/drupal/infraportal.sql;
+    if [ -f infraportal.sql ]; then
+        cp infraportal.sql /opt/drupal/infraportal.sql;
     else
         echo "Make sure there is a database dump in the same dir as this script named 'infraportal.sql'";
     fi;
@@ -80,7 +85,7 @@ else
 fi;
 
 # Can remove this line once docker-compose is updated in main repo
-cp ../docker-compose.yaml docker-compose.yaml;
+cp docker-compose.yaml /opt/drupal/infrastructure-portal/docker-compose.yaml;
 
 # TODO: Test this works correctly
 if ( $use_apache_user ); then
