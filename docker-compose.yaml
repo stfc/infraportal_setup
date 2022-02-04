@@ -14,7 +14,7 @@ services:
       - mysql-prod
       - smtp
 
-  mysql-dev:
+  mysql:
     restart: always
     # Use root/example as user/password credentials
     image: mysql:5.7
@@ -32,21 +32,6 @@ services:
       - /opt/drupal/infraportal.sql:/docker-entrypoint-initdb.d/infraportal.sql
       - dbdata-dev:/var/lib/mysql
 
-  mysql-prod:
-    restart: always
-    # Use root/example as user/password credentials
-    image: mysql:5.7
-    command: --default-authentication-plugin=mysql_native_password
-
-    environment:
-      MYSQL_DATABASE: infra_db
-      MYSQL_ROOT_PASSWORD: example
-
-    ports:
-      - "3307:3306"
-    volumes:
-      - dbdata-prod:/var/lib/mysql
-
   smtp:
     restart: always
     image: rnwood/smtp4dev
@@ -57,6 +42,5 @@ services:
       - smtpdata:/smtp
 
 volumes:
-  dbdata-dev:
-  dbdata-prod:
+  dbdata:
   smtpdata:
