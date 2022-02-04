@@ -24,7 +24,7 @@ done
 (return 0 2>/dev/null) && sourced=1 || sourced=0
 
 if [[ $sourced -eq 0 ]]; then
-    read -p 'Please enter the path to infrastructure-portal:\n'
+    read -p 'Please enter the path to infrastructure-portal>  '
     cd ${REPLY}
 fi
 echo "Moved to $(pwd)"
@@ -47,4 +47,4 @@ echo "Making ://public writable"
 chmod -R 770 sites/default/files
 
 echo "Making */bin executable"
-find . -type d -name bin -exec chmod u=rwx,g=rqx,o=  '{}' \; #770
+find . -type d -name bin -exec chmod u=rwx,g=rwx,o=  '{}' \; #770
