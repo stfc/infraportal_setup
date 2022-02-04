@@ -1,4 +1,20 @@
-#!/usr/local/env bash
+#!/bin/bash
+
+set -e
+
+# Using the "-u" flag will set the infraportal files to be owned by $USER
+use_apache_user=true
+while getopts "u" opt; do
+    case $opt in
+        u )
+            use_apache_user=false
+            ;;
+        \? )
+            echo "Invalid option: -$OPTARG" >&2
+            ;;
+    esac
+done
+
 
 # In order to setup aliases for composer and drush, this should be run as the user of the server administrator
 # Although they are stored in the Drupal container, the "composer" and "drush" commands will work on the host
@@ -66,10 +82,12 @@ fi;
 # Can remove this line once docker-compose is updated in main repo
 cp ../docker-compose.yaml docker-compose.yaml;
 
-# TODO: set to correct permissions - this allows the developer to edit and make changes whilst installing
-# vendor/bin have execute permissions removed, rii_accounts logs to modules/custom instead of 
-chmod -R 775 ../infrastructure-portal/
-chown -R 33:33 ../infrastructure-portal/
+# TODO: Test this works correctly
+if ( $use_apache_user ); then
+    source ./set_permissions.sh
+else
+    source ./set_permissions.sh -u $SUDO_USER
+fi
 
 echo "Running as $SUDO_USER. Setting group permissions and aliases now";
 usermod -aG docker $SUDO_USER;  # Adds user to group
