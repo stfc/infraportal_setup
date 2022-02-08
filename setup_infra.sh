@@ -2,6 +2,17 @@
 
 set -e
 
+# NOTES
+#
+# The script should be run with infraportal_setup as the working directory
+# infraportal.sql should be present in infraportal_setup and be the most recent database export
+# Update and copy/rename DEMO_db_info.env to contain the correct information
+# Insertion of database info into docker-composer.yaml relies on placeholder tags of the form {{placeholder}}
+#	TODO: Upload docker-compose.yaml with the placeholders to the main repo - the docker-compose file in infraportal_setup can then be removed.
+# Use the "u" option to set the current user as owner of the files 
+
+
+
 # Using the "-u" flag will set the infraportal files to be owned by $USER
 use_apache_user=true
 while getopts "u" opt; do
@@ -38,7 +49,7 @@ cur_dir=$(pwd)
 echo "Starting to setup InfraPortal";
 echo "Updating machine and installing git";
 sudo yum update -y && sudo yum install git docker-ce docker-compose -y;
-if [ ! -d "../infrastructure-portal" ]; then
+if [ ! -d "/opt/drupal/infrastructure-portal" ]; then
     git clone https://github.com/stfc/infrastructure-portal.git /opt/drupal/infrastructure-portal;
 fi;
 cd /opt/drupal/infrastructure-portal;
@@ -69,7 +80,6 @@ echo "$db_settings" >> $settings_path;
 
 # The DB dump is moved to a folder that the mysql container will use as part of its startup
 echo "Saving website database dump to /opt/drupal/";
-
 # Move back to the script folder
 cd $cur_dir
 
@@ -84,13 +94,23 @@ else
     read -p "There is already a sql file in /opt/drupal. If this is correct, press enter to continue. Otherwise ctrl-C to exit this script";
 fi;
 
-# Can remove this line once docker-compose is updated in main repo
-cp docker-compose.yaml /opt/drupal/infrastructure-portal/docker-compose.yaml;
+docker_compose_path="/opt/drupal/infrastructure-portal/docker-compose.yaml";
+cp docker-compose.yaml $docker_compose_path;  # Can remove this line once docker-compose is updated in main repo to have placeholder db info
 
-# TODO: Test this works correctly
+# Replace 
+sed -i "s/{{db_name}}/$db_name/g" $docker_compose_path;
+sed -i "s/{{db_user}}/$db_user/g" $docker_compose_path;
+sed -i "s/{{db_passwd}}/$db_passwd/g" $docker_compose_path;
+sed -i "s/{{db_container}}/$db_container/g" $docker_compose_path;
+sed -i "s/{{db_port}}/$db_port/g" $docker_compose_path;
+
+
+# Set the file owner with either current user or apache
 if ( $use_apache_user ); then
+    echo "Setting owner to apache"
     source ./set_permissions.sh
 else
+    echo "Setting owner to $SUDO_USER"
     source ./set_permissions.sh -u $SUDO_USER
 fi
 
