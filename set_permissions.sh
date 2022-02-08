@@ -1,45 +1,39 @@
 #!/bin/bash
 
 # Should be sourced by the setup_infra.sh script
-# If run manually, the path (full or relative) to the infrastrcture-portal directory will be required
-# The "-u" option can be used to set the owner of the files.
-# USAGE: ./set_permissions -u $USER
-# Will set the files to be owned by the account running the script
+# Arg1: Path to infraportal installation
+# Arg2: Username or UID of account to own the files
+# USAGE: ./set_permissions $infraportal_path $USER
 
-set -e
+usage() { echo "$0 usage: ./$0 <path_to_infraportal> <target_user>"; exit 1; }
 
-while getopts "u:" opt; do
-    case $opt in
-        u )
-            user="$OPTARG"
-            echo "Will set owner of files to: $user"
-            ;;
-        \? )
-            echo "Invalid option: -$OPTARG" >&2
-            ;;
-    esac
-done
-
-
-(return 0 2>/dev/null) && sourced=1 || sourced=0
-
-if [[ $sourced -eq 0 ]]; then
-    read -p 'Please enter the path to infrastructure-portal>  '
-    cd ${REPLY}
+if [[ -z "$1" ]]; then
+  echo "No path supplied"
+  infraportal_path="/opt/drupal/infrastructure-portal"
+else
+  infraportal_path="$1"
 fi
+echo "InfraPortal instance at $infraportal_path will have it permissions changed"
+
+
+if [[ -z "$2" ]]; then
+  echo "No username supplied. Setting owner to apache (UID: 33)"
+  user="33"
+else
+  user="$2"
+fi
+echo "Will set owner to $user"
+
+
+cd $infraportal_path || { echo "Failed to move to '$infraportal_path'. Try again" ; exit 1; }
 echo "Moved to $(pwd)"
 
-
-echo "Locking down directories"
+echo "Locking down directories to 750"
 find . -type d -exec chmod u=rwx,g=rx,o= '{}' \;    # 750
 
-echo "Locking down files"
+echo "Locking down files to 640"
 find . -type f -exec chmod u=rw,g=r,o= '{}' \;      # 640
 
-if [[ ! -v user ]]; then
-    echo '$user not set so defaulting to 33'
-    user=33
-fi
 echo "Setting user:group to ${user}:33"
 chown -R $user:33 .
 
@@ -48,3 +42,5 @@ chmod -R 770 sites/default/files
 
 echo "Making */bin executable"
 find . -type d -name bin -exec chmod u=rwx,g=rwx,o=  '{}' \; #770
+
+exit 1
