@@ -10,8 +10,7 @@ services:
     volumes:
       - ./:/opt/drupal/web
     links:
-      - mysql-dev
-      - mysql-prod
+      - mysql
       - smtp
 
   mysql:
@@ -22,8 +21,8 @@ services:
     command: --max_allowed_packet=100M
 
     environment:
-      MYSQL_DATABASE: infra_db
-      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: $$db_name$$
+      MYSQL_ROOT_PASSWORD: $$db_passwd$$
 
     ports:
       - "3306:3306"
