@@ -18,7 +18,8 @@ use_apache_user=true
 while getopts "u" opt; do
     case $opt in
         u )
-            use_apache_user=false
+            user=$SUDO_USER
+            echo "
             ;;
         \? )
             echo "Invalid option: -$OPTARG" >&2
@@ -44,15 +45,16 @@ fi;
 source db_info.env
 
 cur_dir=$(pwd)
+infraportal_path="/opt/drupal/infrastructure-portal"
 
 # This installation assumes a basic CentOS/SL7 image and so installs the necessary packages. There is scope to move this setup to Aquilon
 echo "Starting to setup InfraPortal";
 echo "Updating machine and installing git";
 sudo yum update -y && sudo yum install git docker-ce docker-compose -y;
-if [ ! -d "/opt/drupal/infrastructure-portal" ]; then
-    git clone https://github.com/stfc/infrastructure-portal.git /opt/drupal/infrastructure-portal;
+if [ ! -d "${infraportal_path}" ]; then
+    git clone https://github.com/stfc/infrastructure-portal.git $infraportal_path
 fi;
-cd /opt/drupal/infrastructure-portal;
+cd $infraportal_path;
 echo "Switching to branch $infra_branch";
 git checkout $infra_branch;
 
@@ -94,7 +96,7 @@ else
     read -p "There is already a sql file in /opt/drupal. If this is correct, press enter to continue. Otherwise ctrl-C to exit this script";
 fi;
 
-docker_compose_path="/opt/drupal/infrastructure-portal/docker-compose.yaml";
+docker_compose_path="${infraportal_path}/docker-compose.yaml";
 cp docker-compose.yaml $docker_compose_path;  # Can remove this line once docker-compose is updated in main repo to have placeholder db info
 
 # Replace 
@@ -108,10 +110,10 @@ sed -i "s/{{db_port}}/$db_port/g" $docker_compose_path;
 # Set the file owner with either current user or apache
 if ( $use_apache_user ); then
     echo "Setting owner to apache"
-    source ./set_permissions.sh
+    source ./set_permissions.sh $infraportal_path
 else
     echo "Setting owner to $SUDO_USER"
-    source ./set_permissions.sh -u $SUDO_USER
+    source ./set_permissions.sh -u $SUDO_USER $infraportal_path
 fi
 
 echo "Running as $SUDO_USER. Setting group permissions and aliases now";
