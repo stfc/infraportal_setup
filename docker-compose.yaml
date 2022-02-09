@@ -13,7 +13,7 @@ services:
       - mysql
       - smtp
 
-  mysql:
+  {{db_container}}:
     restart: always
     # Use root/example as user/password credentials
     image: mysql:5.7
@@ -21,11 +21,11 @@ services:
     command: --max_allowed_packet=100M
 
     environment:
-      MYSQL_DATABASE: $$db_name$$
-      MYSQL_ROOT_PASSWORD: $$db_passwd$$
+      MYSQL_DATABASE: {{db_name}}
+      MYSQL_ROOT_PASSWORD: {{db_passwd}}
 
     ports:
-      - "3306:3306"
+      - "{{db_port}}:3306"
 
     volumes:
       - /opt/drupal/infraportal.sql:/docker-entrypoint-initdb.d/infraportal.sql
