@@ -108,7 +108,7 @@ sed -i "s/{{db_port}}/$db_port/g" $docker_compose_path;
 
 
 echo "Setting owner to $file_owner"
-source ./set_permissions.sh -u $file_owner $infraportal_path
+source ./set_permissions.sh $infraportal_path $file_owner
 
 echo "Running as $SUDO_USER. Setting group permissions and aliases now";
 usermod -aG docker $SUDO_USER;  # Adds user to group
