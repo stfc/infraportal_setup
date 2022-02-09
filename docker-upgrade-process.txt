@@ -1,14 +1,12 @@
 # Setting up cloud machine
 
 1. Start with fresh NubesVMS cloud machine
-2. Copy over files:
-    a. database dump
-    b. infra_setup.sh
-    c. docker-compose.yaml (not necessary once new docker-file pushed to infra repo)
-    d. db_info.env
-3. Unzip database file and rename as infraportal.sql - leave in same dir as infra_setup.sh
-4. Run infra_setup.sh (requires elevated privilege)
-5. run `drush cr` from the infraportal folder after waiting a few mins for the db to import
+2. Clone and `cd` into infraportal_setup
+3. Copy over database dump
+4. Unzip database file and rename as infraportal.sql - place in infraportal_setup dir
+5. Run infra_setup.sh (requires elevated privilege)
+  a. Use the `-u` flag to have the current user set as owner of the infraportal files
+6. run `drush cr` from the infraportal folder after waiting a few mins for the db to import
 
 N.B on the prod branch, the .htaccess folder needs to be edited to stop redirecting to infraportal.org
     Copy over .htaccess from existing prod/beta servers?
