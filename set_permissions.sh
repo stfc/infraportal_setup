@@ -5,6 +5,9 @@
 # Arg2: Username or UID of account to own the files
 # USAGE: ./set_permissions $infraportal_path $USER
 
+# Further reading at https://www.drupal.org/node/244924#linuxservers
+
+
 usage() { echo "$0 usage: ./$0 <path_to_infraportal> <target_user>"; exit 1; }
 
 if [[ -z "$1" ]]; then
@@ -28,19 +31,31 @@ echo "Will set owner to $user"
 cd $infraportal_path || { echo "Failed to move to '$infraportal_path'. Try again" ; exit 1; }
 echo "Moved to $(pwd)"
 
-echo "Locking down directories to 750"
-find . -type d -exec chmod u=rwx,g=rx,o= '{}' \;    # 750
-
-echo "Locking down files to 640"
-find . -type f -exec chmod u=rw,g=r,o= '{}' \;      # 640
+# Allows full access for user and group, none for other
+dir_perm="770"
+# Allows user to execute (req. for Drush etc.), group to r+w, none for other
+file_perm="760"
+# Read only for user and group, none for other
+settings_perm="440"
 
 echo "Setting user:group to ${user}:33"
 chown -R $user:33 .
 
-echo "Making ://public writable"
-chmod -R 770 sites/default/files
+echo "Setting directories to $dir_perm"
+find . -type d -exec chmod "$dir_perm" '{}' \;
 
-echo "Making */bin executable"
-find . -type d -name bin -exec chmod u=rwx,g=rwx,o=  '{}' \; #770
+echo "Setting files to $file_perm"
+find . -type f -exec chmod "$file_perm" '{}' \;
+
+echo "Adding permissions for sites/"
+find sites/ -type d -name files -exec chmod $dir_perm '{}' \;
+for d in sites/*/files; do
+  find $d -type d -exec chmod $dir_perm '{}' \;
+  find $d -type f -exec chmod $file_perm '{}' \;
+done
+
+# Setting settings.php to read only for owner and apache
+echo "Setting settings.php to $setttings.php"
+find sites/ -type f -name settings.php -exec chmod $settings_perm '{}' \;
 
 exit 1
