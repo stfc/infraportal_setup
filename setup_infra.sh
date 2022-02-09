@@ -14,12 +14,11 @@ set -e
 
 
 # Using the "-u" flag will set the infraportal files to be owned by $USER
-use_apache_user=true
+file_owner="33" # Apache UID
 while getopts "u" opt; do
     case $opt in
         u )
-            user=$SUDO_USER
-            echo "
+            file_owner=$SUDO_USER
             ;;
         \? )
             echo "Invalid option: -$OPTARG" >&2
@@ -85,6 +84,7 @@ echo "Saving website database dump to /opt/drupal/";
 # Move back to the script folder
 cd $cur_dir
 
+# Copy over db file but do not overwrite if there is an existing one
 if [ ! -f "/opt/drupal/infraportal.sql" ]; then
     echo "Copying .sql file to /opt/drupal/";
     if [ -f infraportal.sql ]; then
@@ -99,7 +99,7 @@ fi;
 docker_compose_path="${infraportal_path}/docker-compose.yaml";
 cp docker-compose.yaml $docker_compose_path;  # Can remove this line once docker-compose is updated in main repo to have placeholder db info
 
-# Replace 
+# Replace placeholders with env variables
 sed -i "s/{{db_name}}/$db_name/g" $docker_compose_path;
 sed -i "s/{{db_user}}/$db_user/g" $docker_compose_path;
 sed -i "s/{{db_passwd}}/$db_passwd/g" $docker_compose_path;
@@ -107,14 +107,8 @@ sed -i "s/{{db_container}}/$db_container/g" $docker_compose_path;
 sed -i "s/{{db_port}}/$db_port/g" $docker_compose_path;
 
 
-# Set the file owner with either current user or apache
-if ( $use_apache_user ); then
-    echo "Setting owner to apache"
-    source ./set_permissions.sh $infraportal_path
-else
-    echo "Setting owner to $SUDO_USER"
-    source ./set_permissions.sh -u $SUDO_USER $infraportal_path
-fi
+echo "Setting owner to $file_owner"
+source ./set_permissions.sh -u $file_owner $infraportal_path
 
 echo "Running as $SUDO_USER. Setting group permissions and aliases now";
 usermod -aG docker $SUDO_USER;  # Adds user to group
