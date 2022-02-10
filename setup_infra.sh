@@ -134,9 +134,18 @@ usermod -aG docker $SUDO_USER;  # Adds user to group
 # exec su -l $SUDO_USER;          # Refreshes groups to avoid having to logout and login
 echo "Logout and back in to refresh group memberships"
 
-# Allows drush to be run from the infrastructure-portal dir
-echo "alias drush='docker-compose exec drupal /opt/drupal/web/vendor/bin/drush'" >> /home/$SUDO_USER/.bash_aliases;
-
+# Allows drush to be run from the host machine
+drush_function=$(cat <<- END
+function drush() {
+        cur_dir=$(pwd)
+        echo $cur_dir
+        cd /opt/drupal/infrastructure-portal
+        docker-compose exec drupal /opt/drupal/web/vendor/bin/drush "$@"
+        cd $cur_dir
+};
+END
+)
+echo "$drush_function" >> /home/$SUDO_USER/.bashrc;
 # Start the containers
 systemctl start docker;
 
