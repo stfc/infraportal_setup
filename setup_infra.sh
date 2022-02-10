@@ -36,6 +36,15 @@ if [ ! -d "/opt/drupal" ]; then
 	mkdir /opt/drupal;
 fi;
 
+if [ ! -f "./db_info.env" ]; then
+	echo "Please create db_info.env and fill in the database info (copy from DEMO_db_info.env)";
+	exit 1
+fi;
+if [ ! -f "./set_permissions.sh" ]; then
+	echo "Could not find set_permissions.sh in working directory. Please run $0 from infraportal_setup/";
+	exit 1
+fi;
+
 # Contains the DB secrets - this should end up being provided by GitHub secrets for privacy and security concerns.
 source db_info.env
 
