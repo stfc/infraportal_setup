@@ -58,4 +58,4 @@ done
 echo "Setting settings.php to $setttings.php"
 find sites/ -type f -name settings.php -exec chmod $settings_perm '{}' \;
 
-exit 1
+exit 0
