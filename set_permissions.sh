@@ -32,9 +32,9 @@ cd $infraportal_path || { echo "Failed to move to '$infraportal_path'. Try again
 echo "Moved to $(pwd)"
 
 # Allows full access for user and group, none for other
-dir_perm="770"
-# Allows user to execute (req. for Drush etc.), group to r+w, none for other
-file_perm="760"
+dir_perm="750"
+# Allows user to read/write group to read, none for other
+file_perm="640"
 # Read only for user and group, none for other
 settings_perm="440"
 
@@ -53,6 +53,10 @@ for d in sites/*/files; do
   find $d -type d -exec chmod $dir_perm '{}' \;
   find $d -type f -exec chmod $file_perm '{}' \;
 done
+
+echo "Making drush binary executable"
+# Uses $dir_perm as it should be executable for owner/group just like directories
+find vendor/bin/drush -exec chmod $dir_perm '{}' \;
 
 # Setting settings.php to read only for owner and apache
 echo "Setting settings.php to $setttings.php"
