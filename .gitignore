@@ -1,0 +1,7 @@
+*.zip
+*.sql
+
+*.env
+!DEMO_db_info.env
+
+beta_details.txt
