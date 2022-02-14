@@ -27,3 +27,31 @@ If required, a manual deployment can be done by utlising the existing docker-com
     5. Set file and directory permissions as required by Drupal and your specific site
         a. It is advised that vendor/bin/* is set to executable (770)
         b. sites/default/files/* should be writtable by apache (770)
+
+
+DEPLOYING UPDATES
+
+There are two possible deployment paths, depending on whether all files (including those managed by composer) are commited to VCS (this is the current method as of 14/02/2022), or if only custom and modified files are included (planned method to be implemented)
+
+1. All files under VCS
+  a. Either on beta, or a new infraportal instance, run the required composer and drush commands.
+  b. This should automatically update composer.json and composer.lock
+    i. eg running `composer require drupal/core:9.2` will update composer.json and will update drupal core folders.
+  c. Commit all changes
+  d. On prod, navigate to the infraportal folder (defaults to /opt/drupal/infrastructure-portal)
+  e. Pull changes
+  f. Run `drush updb && drush cr` to get the changes to update the database and refresh the cache
+  g. All changes should now be present on the prod site
+
+For custom module updates, or non-composer mananged files, the same process applies. Just swap step 1a with "Apply file updates manually"
+
+2. Only non-composer managed files under VSC
+  a. Either on beta, or a new infraportal instance, add custom file changes
+    i. For any contributed modules/themes changes, use composer. The changed files will not be commited, but composer.json and composer.lock will
+  b. For contrib modules that need custom changes, use the patches file and add an entry in composer.json (follow the format of the existing patches or see https://github.com/cweagans/composer-patches)
+  c. Commit the changed files and patches
+    i. Composer managed files should be ignored by .gitignore.Do NOT force add these to the commit.
+  d. On prod, navigate to the infraportal folder (defaults to /opt/drupal/infrastructure-portal)
+  e. Pull the changes
+  f. Run `composer update`, `drush updb && drush cr`
+  g. All changes should now be present on the prod site
