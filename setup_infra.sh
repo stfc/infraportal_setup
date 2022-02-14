@@ -75,12 +75,12 @@ db_settings=$(cat <<- END
 \$settings["hash_salt"] = "$HASH_SALT";
 \$settings["config_sync_directory"] = "../config";
 \$databases["default"]["default"] = array (
-    "database" => "$db_name",
-    "username" => "$db_user",
-    "password" => "$db_passwd",
+    "database" => "$DB_NAME",
+    "username" => "$DB_USER",
+    "password" => "$DB_PASSWD",
     "prefix" => "",
-    "host" => "$db_container",
-    "port" => "$db_port",
+    "host" => "$DB_CONTAINER",
+    "port" => "$DB_PORT",
     "namespace" => "Drupal\\Core\\Database\\Driver\\mysql",
     "driver" => "mysql",
 );
@@ -96,11 +96,11 @@ echo "Copied docker-compose.yaml to $docker_compose_path"
 
 # Replace placeholders with env variables
 echo "Doing placeholder substitution for docker-compose"
-sed -i "s/{{db_name}}/$db_name/g" $docker_compose_path;
-sed -i "s/{{db_user}}/$db_user/g" $docker_compose_path;
-sed -i "s/{{db_passwd}}/$db_passwd/g" $docker_compose_path;
-sed -i "s/{{db_container}}/$db_container/g" $docker_compose_path;
-sed -i "s/{{db_port}}/$db_port/g" $docker_compose_path;
+sed -i "s/{{db_name}}/$DB_NAME/g" $docker_compose_path;
+sed -i "s/{{db_user}}/$DB_USER/g" $docker_compose_path;
+sed -i "s/{{db_passwd}}/$DB_PASSWD/g" $docker_compose_path;
+sed -i "s/{{db_container}}/$DB_CONTAINER/g" $docker_compose_path;
+sed -i "s/{{db_port}}/$DB_PORT/g" $docker_compose_path;
 
 
 ####
