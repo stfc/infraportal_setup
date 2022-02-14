@@ -59,7 +59,7 @@ echo "Making drush binary executable"
 find vendor/bin/drush -exec chmod $dir_perm '{}' \;
 
 # Setting settings.php to read only for owner and apache
-echo "Setting settings.php to $setttings.php"
+echo "Setting settings.php to $settings_perm"
 find sites/ -type f -name settings.php -exec chmod $settings_perm '{}' \;
 
 exit 0
