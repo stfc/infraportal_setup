@@ -108,18 +108,21 @@ sed -i "s/{{db_port}}/$DB_PORT/g" $docker_compose_path;
 ####
 
 # The DB dump is moved to a folder that the mysql container will use as part of its startup
-echo "Saving website database dump to /opt/drupal/";
+
+db_dump_path="/opt/drupal/infraportal.sql"
+echo "Saving website database dump to $db_dump_path";
 
 # Copy over db file but do not overwrite if there is an existing one
-if [ ! -f "/opt/drupal/infraportal.sql" ]; then
+if [ ! -f "$db_dump_path" ]; then
     if [ -f infraportal.sql ]; then
-        echo "Copying .sql file to /opt/drupal/";
-        cp infraportal.sql /opt/drupal/infraportal.sql;
+        echo "Copying .sql file to $db_dump_path";
+        cp infraportal.sql $db_dump_path;
     else
         echo "Make sure there is a database dump in the same dir as this script named 'infraportal.sql'";
+        echo "Skipping this step for now - ensure that you place a sb dump at $db_dump_path before starting the docker containers";
     fi;
 else
-    read -p "There is already a sql file in /opt/drupal. If this is correct, press enter to continue. Otherwise ctrl-C to exit this script";
+  read -p "WARNING! There is already a sql file at $db_dump_path. If this is correct, press enter to continue (THIS WILL OVERWITE THE EXISTING FILE - PROCEED WITH CAUTION). To preserve the existing file, ctrl-C to exit this script now.";
 fi;
 
 ####
