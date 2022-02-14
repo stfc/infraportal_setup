@@ -24,9 +24,6 @@ services:
       MYSQL_DATABASE: {{db_name}}
       MYSQL_ROOT_PASSWORD: {{db_passwd}}
 
-    ports:
-      - "{{db_port}}:3306"
-
     volumes:
       - /opt/drupal/infraportal.sql:/docker-entrypoint-initdb.d/infraportal.sql
       - dbdata:/var/lib/mysql
