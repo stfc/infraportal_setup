@@ -55,3 +55,5 @@ For custom module updates, or non-composer mananged files, the same process appl
   e. Pull the changes
   f. Run `composer update`, `drush updb && drush cr`
   g. All changes should now be present on the prod site
+
+N.B The move to having composer managed files be ignored by git is in preparation for a CI/CD implementation that will include building a custom Drupal image for Docker which will have the composer commands run as part of its build process. This will simplify the change process to "push changes to active branch, wait for automated workflow to complete, re-start Drupal on the target host with the new docker image"
