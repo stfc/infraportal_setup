@@ -45,7 +45,7 @@ There are two possible deployment paths, depending on whether all files (includi
 
 For custom module updates, or non-composer mananged files, the same process applies. Just swap step 1a with "Apply file updates manually"
 
-2. Only non-composer managed files under VSC
+2. Only non-composer managed files under VCS
   a. Either on beta, or a new infraportal instance, add custom file changes
     i. For any contributed modules/themes changes, use composer. The changed files will not be commited, but composer.json and composer.lock will
   b. For contrib modules that need custom changes, use the patches file and add an entry in composer.json (follow the format of the existing patches or see https://github.com/cweagans/composer-patches)
