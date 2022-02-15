@@ -110,7 +110,6 @@ echo "Logout and back in to refresh group memberships"
 drush_function=$(cat <<- END
 function drush() {
         cur_dir=$(pwd)
-        echo $cur_dir
         cd /opt/drupal/infrastructure-portal
         docker-compose exec drupal /opt/drupal/web/vendor/bin/drush "$@"
         cd $cur_dir
