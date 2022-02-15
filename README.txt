@@ -1,4 +1,5 @@
 MOTIVATION FOR DOCKER
+=======================
 
 To make implementation of code changes, moving of server hosts, and general site maintenance easier.
 To remove as many steps that require developer interaction wiht deploying and maintaining InfraPortal as possible
