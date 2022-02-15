@@ -9,17 +9,3 @@ services:
       - "80:80"
     volumes:
       - ./:/opt/drupal/web
-    links:
-      - smtp
-
-  smtp:
-    restart: always
-    image: rnwood/smtp4dev
-    ports:
-      - "2580:80"
-      - "2525:25"
-    volumes:
-      - smtpdata:/smtp
-
-volumes:
-  smtpdata:
