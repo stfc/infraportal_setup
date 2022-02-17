@@ -61,11 +61,12 @@ packages=(
 );
 echo "Starting to setup InfraPortal";
 echo "Updating machine and installing: ${packages[@]}";
-sudo yum update -y && sudo yum install ${packages[@]} -y;
+# sudo yum update -y && sudo yum install ${packages[@]} -y;
 if [ ! -d "${infraportal_path}" ]; then
     echo "Cloning infraportal to $infraportal_path"
-    echo "Checking out $infra_branch"
-    git clone --branch $infra_branch https://github.com/stfc/infrastructure-portal.git $infraportal_path
+    echo "Checking out $INFRA_BRANCH"
+    echo "git clone --branch $INFRA_BRANCH https://github.com/stfc/infrastructure-portal.git $infraportal_path"
+    git clone --branch $INFRA_BRANCH https://github.com/stfc/infrastructure-portal.git $infraportal_path
 fi;
 
 ####
