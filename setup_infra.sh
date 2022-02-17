@@ -68,6 +68,17 @@ if [ ! -d "${infraportal_path}" ]; then
 fi;
 
 ####
+# HAPROXY
+####
+
+if [ ! -f "haproxy.cfg" ]; then
+  echo "haproxy.cfg not found"
+  read -p "Press enter to continue without haproxy setup. Otherwise ctrl-c to exit the script now";
+else
+  cp haproxy.cfg /etc/haproxy/haproxy.cfg;
+fi;
+
+####
 # DATABASE CREDENTIALS
 # variables sourced from db_info.env
 ####
