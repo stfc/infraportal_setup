@@ -32,9 +32,9 @@ cd $infraportal_path || { echo "Failed to move to '$infraportal_path'. Try again
 echo "Moved to $(pwd)"
 
 # Allows full access for user and group, none for other
-dir_perm="750"
+dir_perm="770"
 # Allows user to read/write group to read, none for other
-file_perm="640"
+file_perm="660"
 # Read only for user and group, none for other
 settings_perm="440"
 
