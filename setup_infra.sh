@@ -52,9 +52,15 @@ infraportal_path="/opt/drupal/infrastructure-portal"
 
 # This installation assumes a basic CentOS/SL7 image and so installs the necessary packages. There is scope to move this setup to Aquilon
 # TODO: Add this to the Aquilon profile
+packages=(
+  "git"
+  "docker-ce"
+  "docker-compose"
+  "haproxy"
+);
 echo "Starting to setup InfraPortal";
-echo "Updating machine and installing git";
-sudo yum update -y && sudo yum install git docker-ce docker-compose -y;
+echo "Updating machine and installing: ${packages[@]}";
+sudo yum update -y && sudo yum install ${packages[@]} -y;
 if [ ! -d "${infraportal_path}" ]; then
     echo "Cloning infraportal to $infraportal_path"
     echo "Checking out $infra_branch"
@@ -159,7 +165,8 @@ END
 )
 echo "$drush_function" >> /home/$SUDO_USER/.bashrc;
 # Start the containers
-systemctl start docker;
+systemctl enable docker --now;
+systemctl enable haproxy --now;
 
 echo "Installation complete. Run `docker-compose up` from the infrastructure-portal directory now!"
 echo "First time starting up may take longer as the database is imported for the first time"
