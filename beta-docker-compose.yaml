@@ -27,6 +27,7 @@ services:
     volumes:
       - /opt/drupal/infraportal.sql:/docker-entrypoint-initdb.d/infraportal.sql
       - dbdata:/var/lib/mysql
+      - ./configs/php.ini:/usr/local/etc/php/conf.d/php.ini 
 
   smtp:
     restart: always

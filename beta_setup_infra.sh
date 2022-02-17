@@ -3,7 +3,7 @@
 set -e
 
 # NOTES
-#
+# BETA
 # Use the "u" option to set the current user as owner of the files 
 # The script should be run with infraportal_setup as the working directory
 # infraportal.sql should be present in infraportal_setup and be the most recent database export
@@ -34,6 +34,7 @@ fi;
 if [ ! -d "/opt/drupal" ]; then
 	echo "Making /opt/drupal";
 	mkdir /opt/drupal;
+  chmod 770 /opt/drupal;
 fi;
 
 if [ ! -f "./db_info.env" ]; then
@@ -68,17 +69,6 @@ if [ ! -d "${infraportal_path}" ]; then
 fi;
 
 ####
-# HAPROXY
-####
-
-if [ ! -f "haproxy.cfg" ]; then
-  echo "haproxy.cfg not found"
-  read -p "Press enter to continue without haproxy setup. Otherwise ctrl-c to exit the script now";
-else
-  cp haproxy.cfg /etc/haproxy/haproxy.cfg;
-fi;
-
-####
 # DATABASE CREDENTIALS
 # variables sourced from db_info.env
 ####
@@ -87,19 +77,10 @@ fi;
 
 settings_path="${infraportal_path}/sites/default/settings.php";
 cp "${infraportal_path}/sites/default/default.settings.php" $settings_path;
-
 db_settings=$(cat <<- END
-\$settings['reverse_proxy'] = TRUE;
-\$settings['reverse_proxy_addresses'] = ['172.17.0.1','172.19.0.1','127.0.0.1'];
-
-\$settings['trusted_host_patterns'] = [
-  '^www\.infraportal\.org\.uk$',
-  '^infraportal\.org\.uk$'
-];
-
-\$config["system.logging"]["error_level"] = "hide"; // hide|some|all|verbose
+\$config["system.logging"]["error_level"] = "all"; // hide|some|all|verbose
 \$settings["hash_salt"] = "$HASH_SALT";
-\$settings["config_sync_directory"] = "../config";
+\$settings["config_sync_directory"] = "sites/default/config";
 \$databases["default"]["default"] = array (
     "database" => "$DB_NAME",
     "username" => "$DB_USER",
@@ -117,8 +98,8 @@ echo "$db_settings" >> $settings_path;
 # docker-compose.yaml
 
 docker_compose_path="${infraportal_path}/docker-compose.yaml";
-cp docker-compose.yaml $docker_compose_path;  # Can remove this line once docker-compose is updated in main repo to have placeholder db info
-echo "Copied docker-compose.yaml to $docker_compose_path"
+cp beta-docker-compose.yaml $docker_compose_path;  # Can remove this line once docker-compose is updated in main repo to have placeholder db info
+echo "Copied beta-docker-compose.yaml to $docker_compose_path"
 
 # Replace placeholders with env variables
 echo "Doing placeholder substitution for docker-compose"
@@ -127,7 +108,6 @@ sed -i "s/{{db_user}}/$DB_USER/g" $docker_compose_path;
 sed -i "s/{{db_passwd}}/$DB_PASSWD/g" $docker_compose_path;
 sed -i "s/{{db_container}}/$DB_CONTAINER/g" $docker_compose_path;
 sed -i "s/{{db_port}}/$DB_PORT/g" $docker_compose_path;
-
 
 ####
 # GET DATABASE READY FOR IMPORT
@@ -167,20 +147,16 @@ echo "Logout and back in to refresh group memberships"
 drush_function=$(cat <<- END
 function drush() {
         cur_dir=\$(pwd)
-        echo \$cur_dir
         cd /opt/drupal/infrastructure-portal
         docker-compose exec drupal /opt/drupal/web/vendor/bin/drush "\$@"
-        cd\ $cur_dir
+        cd \$cur_dir
 };
 END
 )
 echo "$drush_function" >> /home/$SUDO_USER/.bashrc;
 # Start the containers
 systemctl enable docker --now;
-systemctl enable haproxy --now;
 
 echo "Installation complete. Run `docker-compose up` from the infrastructure-portal directory now!"
 echo "First time starting up may take longer as the database is imported for the first time"
-# Uncomment if infraportal should be automatically started
 # docker-compose up &
-

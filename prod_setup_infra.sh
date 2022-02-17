@@ -3,7 +3,7 @@
 set -e
 
 # NOTES
-#
+# PRODUCTION
 # Use the "u" option to set the current user as owner of the files 
 # The script should be run with infraportal_setup as the working directory
 # infraportal.sql should be present in infraportal_setup and be the most recent database export
@@ -53,13 +53,30 @@ infraportal_path="/opt/drupal/infrastructure-portal"
 
 # This installation assumes a basic CentOS/SL7 image and so installs the necessary packages. There is scope to move this setup to Aquilon
 # TODO: Add this to the Aquilon profile
+packages=(
+  "git"
+  "docker-ce"
+  "docker-compose"
+  "haproxy"
+);
 echo "Starting to setup InfraPortal";
-echo "Updating machine and installing git";
-sudo yum update -y && sudo yum install git docker-ce docker-compose -y;
+echo "Updating machine and installing: ${packages[@]}";
+sudo yum update -y && sudo yum install ${packages[@]} -y;
 if [ ! -d "${infraportal_path}" ]; then
     echo "Cloning infraportal to $infraportal_path"
-    echo "Checking out $INFRA_BRANCH"
-    git clone --branch $INFRA_BRANCH https://github.com/stfc/infrastructure-portal.git $infraportal_path
+    echo "Checking out $infra_branch"
+    git clone --branch $infra_branch https://github.com/stfc/infrastructure-portal.git $infraportal_path
+fi;
+
+####
+# HAPROXY
+####
+
+if [ ! -f "haproxy.cfg" ]; then
+  echo "haproxy.cfg not found"
+  read -p "Press enter to continue without haproxy setup. Otherwise ctrl-c to exit the script now";
+else
+  cp haproxy.cfg /etc/haproxy/haproxy.cfg;
 fi;
 
 ####
@@ -72,9 +89,15 @@ fi;
 settings_path="${infraportal_path}/sites/default/settings.php";
 cp "${infraportal_path}/sites/default/default.settings.php" $settings_path;
 db_settings=$(cat <<- END
-\$config["system.logging"]["error_level"] = "all"; // hide|some|all|verbose
+\$settings['reverse_proxy'] = TRUE;
+\$settings['reverse_proxy_addresses'] = ['172.17.0.1','172.19.0.1','127.0.0.1'];
+\$settings['trusted_host_patterns'] = [
+  '^www\.infraportal\.org\.uk$',
+  '^infraportal\.org\.uk$'
+];
+\$config["system.logging"]["error_level"] = "hide"; // hide|some|all|verbose
 \$settings["hash_salt"] = "$HASH_SALT";
-\$settings["config_sync_directory"] = "../config";
+\$settings["config_sync_directory"] = "sites/default/config";
 \$databases["default"]["default"] = array (
     "database" => "$DB_NAME",
     "username" => "$DB_USER",
@@ -93,7 +116,7 @@ echo "$db_settings" >> $settings_path;
 
 docker_compose_path="${infraportal_path}/docker-compose.yaml";
 cp prod-docker-compose.yaml $docker_compose_path;  # Can remove this line once docker-compose is updated in main repo to have placeholder db info
-echo "Copied docker-compose.yaml to $docker_compose_path"
+echo "Copied prod-docker-compose.yaml to $docker_compose_path"
 
 ####
 # FILE PERMISSIONS
@@ -110,19 +133,18 @@ echo "Logout and back in to refresh group memberships"
 # Allows drush to be run from the host machine
 drush_function=$(cat <<- END
 function drush() {
-        cur_dir=$(pwd)
+        cur_dir=\$(pwd)
         cd /opt/drupal/infrastructure-portal
-        docker-compose exec drupal /opt/drupal/web/vendor/bin/drush "$@"
-        cd $cur_dir
+        docker-compose exec drupal /opt/drupal/web/vendor/bin/drush "\$@"
+        cd \$cur_dir
 };
 END
 )
 echo "$drush_function" >> /home/$SUDO_USER/.bashrc;
 # Start the containers
-systemctl start docker;
+systemctl enable docker --now;
+systemctl enable haproxy --now;
 
 echo "Installation complete. Run `docker-compose up` from the infrastructure-portal directory now!"
 echo "First time starting up may take longer as the database is imported for the first time"
-# Uncomment if infraportal should be automatically started
 # docker-compose up &
-
