@@ -74,6 +74,12 @@ cp "${infraportal_path}/sites/default/default.settings.php" $settings_path;
 db_settings=$(cat <<- END
 \$settings['reverse_proxy'] = TRUE;
 \$settings['reverse_proxy_addresses'] = ['172.17.0.1','172.19.0.1','127.0.0.1'];
+
+\$settings['trusted_host_patterns'] = [
+  '^www\.infraportal\.org\.uk$',
+  '^infraportal\.org\.uk$'
+];
+
 \$config["system.logging"]["error_level"] = "hide"; // hide|some|all|verbose
 \$settings["hash_salt"] = "$HASH_SALT";
 \$settings["config_sync_directory"] = "../config";
