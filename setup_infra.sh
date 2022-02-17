@@ -70,8 +70,11 @@ fi;
 
 settings_path="${infraportal_path}/sites/default/settings.php";
 cp "${infraportal_path}/sites/default/default.settings.php" $settings_path;
+
 db_settings=$(cat <<- END
-\$config["system.logging"]["error_level"] = "all"; // hide|some|all|verbose
+\$settings['reverse_proxy'] = TRUE;
+\$settings['reverse_proxy_addresses'] = ['172.17.0.1','172.19.0.1','127.0.0.1'];
+\$config["system.logging"]["error_level"] = "hide"; // hide|some|all|verbose
 \$settings["hash_salt"] = "$HASH_SALT";
 \$settings["config_sync_directory"] = "../config";
 \$databases["default"]["default"] = array (
