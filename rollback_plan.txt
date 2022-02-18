@@ -1,0 +1,13 @@
+PROCEDURE
+
+1. Before starting any work take a full database dump/backup
+2. Put the existing site into maintenance mode
+3. Create a new VMware or Cloud machine
+4. Perform planned upgrade on new machine working with the database dump from step 1.
+5. Test the new site by accessing it at its IP address (not via infraportal.stfc.ac.uk)
+6. If all goes well, change DNS and routing info to point to new server and take down the old server
+
+ROLLBACK/FAIL PLAN
+1. Delete the new VM/cloud machine to start again from fresh
+2. Take original site out of maintenance mode
+3. Take a new database dump/backup before starting again

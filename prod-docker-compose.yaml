@@ -1,0 +1,12 @@
+version: '3.1'
+
+services:
+
+  drupal:
+    restart: always
+    image: drupal:9.3.2-php7.4-apache-buster
+    ports:
+      - "3080:80"
+    volumes:
+      - ./:/opt/drupal/web
+      - ./configs/php.ini:/usr/local/etc/php/conf.d/php.ini 
