@@ -1,13 +1,17 @@
 MOTIVATION FOR DOCKER
 =======================
 
-To make implementation of code changes, moving of server hosts, and general site maintenance easier.
-To remove as many steps that require developer interaction wiht deploying and maintaining InfraPortal as possible
-To allow for a CI/CD pipeline to be developed that will automate testing and deployment of any changes
+To make implementation of code changes, moving of server hosts, and general site
+maintenance easier. To remove as many steps that require developer interaction
+wiht deploying and maintaining InfraPortal as possible To allow for a CI/CD
+pipeline to be developed that will automate testing and deployment of any
+changes
 
 
-USAGE
-The included script file "setup_infra.sh" can be run on a fresh machine (CentOS/SL7) and will result in an active InfraPortal instance on port 80 of the host machine.
+USAGE The included script file "setup_infra.sh" can be run on a fresh machine
+(CentOS/SL7) and will result in an active InfraPortal instance on port 80 of the
+host machine.
+
 Steps:
     1. Clone the repo to anywhere on the host machine
     2. cd into infraportal_setup
@@ -19,6 +23,7 @@ Steps:
     6. cd to /opt/drupal/infraportal and run `docker-compose up`
 
 MANUAL DEPLOYMENT
+
 If required, a manual deployment can be done by utlising the existing docker-compose file.
     1. A database dump should be placed in the directory specified by "volumes" under the mysql docker container. Default is /opt/drupal/infraportal.sql
     2. Clone the InfraPortal repo and checkout the relevant branch
@@ -32,7 +37,10 @@ If required, a manual deployment can be done by utlising the existing docker-com
 
 DEPLOYING UPDATES
 
-There are two possible deployment paths, depending on whether all files (including those managed by composer) are commited to VCS (this is the current method as of 14/02/2022), or if only custom and modified files are included (planned method to be implemented)
+There are two possible deployment paths, depending on whether all files
+(including those managed by composer) are commited to VCS (this is the current
+method as of 14/02/2022), or if only custom and modified files are included
+(planned method to be implemented)
 
 1. All files under VCS
   a. Either on beta, or a new infraportal instance, run the required composer and drush commands.
@@ -57,4 +65,37 @@ For custom module updates, or non-composer mananged files, the same process appl
   f. Run `composer update`, `drush updb && drush cr`
   g. All changes should now be present on the prod site
 
-N.B The move to having composer managed files be ignored by git is in preparation for a CI/CD implementation that will include building a custom Drupal image for Docker which will have the composer commands run as part of its build process. This will simplify the change process to "push changes to active branch, wait for automated workflow to complete, re-start Drupal on the target host with the new docker image"
+N.B The move to having composer managed files be ignored by git is in
+preparation for a CI/CD implementation that will include building a custom
+Drupal image for Docker which will have the composer commands run as part of its
+build process. This will simplify the change process to "push changes to active
+branch, wait for automated workflow to complete, re-start Drupal on the target
+host with the new docker image"
+
+BACKUPS
+
+On the existing prod cloud server (130.246.213.206), local backups have been
+configured to a Cloud volume, separate from the one used for the Root
+filesystem. These backups *only* cover the code in /opt/drupal, as the database
+backups are handled by the SCD Database team, and the rest of the system is
+configured by scripts in this directory.
+
+These backups are setup using a tool [Restic](https://restic.net) and are stored
+in /var/backups/cloud, where the Cloud volume is mounted. The encryption
+password for these backups is stored in `/etc/restic-password`.
+
+A Systemd timer is configured to run the backups daily, however they can also be
+run manually if a snapshot is required by running:
+
+```shell
+systemctl start restic-backup@-opt-drupal.service
+```
+
+Previous backups can be listed using the following command:
+
+```shell
+restic -r /var/backups/cloud --password-file /etc/restic-password snapshots
+```
+
+See the [Restic documentation](https://restic.readthedocs.io/en/stable/) for
+more information on how to use Restic for restores etc.
