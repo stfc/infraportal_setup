@@ -79,7 +79,7 @@ fi;
 settings_path="${infraportal_path}/sites/default/settings.php";
 cp "${infraportal_path}/sites/default/default.settings.php" $settings_path;
 db_settings=$(cat <<- END
-\$config["system.logging"]["error_level"] = "all"; // hide|some|all|verbose
+\$config["system.logging"]["error_level"] = "hide"; // hide|some|all|verbose
 \$settings["hash_salt"] = "$HASH_SALT";
 \$settings["config_sync_directory"] = "sites/default/config";
 \$databases["default"]["default"] = array (
