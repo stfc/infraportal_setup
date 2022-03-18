@@ -160,4 +160,10 @@ systemctl enable docker --now;
 
 echo "Installation complete. Run `docker-compose up` from the infrastructure-portal directory now!"
 echo "First time starting up may take longer as the database is imported for the first time"
+# TODO: Test and make this part of main script
 # docker-compose up &
+# This will install the site from the composer.lock file
+# docker-compose -f ${infraportal_path}/docker-compose.yaml exec drupal bash -c "composer --working-dir='/opt/drupal/web' install"
+# drush cr; drush updb; drush cr; # this will pause and wait for user confirmation before performing the database update
+# drush config:import
+# drush cr; drush updb; drush cr; # this will pause and wait for user confirmation before performing the database update
